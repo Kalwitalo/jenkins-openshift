@@ -91,7 +91,7 @@ pipeline {
             }
         }
 
-        stage("Create New App") {
+        stage("Create Env") {
             when {
                 expression {
                     openshift.withCluster() {
@@ -106,7 +106,7 @@ pipeline {
                 script {
                     openshift.withCluster() {
                         openshift.withProject("${projectOpenshiftName}") {
-                            openshift.newApp("${appName}-${env.BRANCH_NAME}", "--name=${appName}-${env.BRANCH_NAME}").narrow('svc').expose()
+                            openshift.newApp("${appName}-${env.BRANCH_NAME}:latest", "--name=${appName}-${env.BRANCH_NAME}").narrow('svc').expose()
                         }
                     }
                 }
