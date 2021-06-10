@@ -77,7 +77,7 @@ pipeline {
         stage('Ask if promote to Prod') {
             when {
                 beforeInput true
-                branch 'production'
+                branch 'producao'
             }
             steps {
                 office365ConnectorSend webhookUrl: "${office365WebhookUrl}",
