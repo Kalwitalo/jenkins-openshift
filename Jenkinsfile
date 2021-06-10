@@ -91,12 +91,12 @@ pipeline {
             }
         }
 
-        stage("Create Env") {
+        stage("Create new App") {
             when {
                 expression {
                     openshift.withCluster() {
                         openshift.withProject("${projectOpenshiftName}") {
-                            return !openshift.selector("dc", "${appName}-${env.BRANCH_NAME}").exists()
+                            return !openshift.selector("deployment", "${appName}-${env.BRANCH_NAME}").exists()
                         }
                     }
                 }
