@@ -24,7 +24,7 @@ pipeline {
             steps {
                 script {
                     openshift.withCluster() {
-                        openshift.withProject() {
+                        openshift.withProject("${projectOpenshiftName}") {
                             echo "Using project: ${openshift.project()} in cluster ${openshift.cluster()}"
                         }
                     }
@@ -36,14 +36,18 @@ pipeline {
             when {
                 expression {
                     openshift.withCluster() {
-                        return !openshift.selector("bc", "${appName}-${env.BRANCH_NAME}").exists()
+                        openshift.withProject("${projectOpenshiftName}") {
+                            return !openshift.selector("bc", "${appName}-${env.BRANCH_NAME}").exists()
+                        }
                     }
                 }
             }
             steps {
                 script {
                     openshift.withCluster() {
-                        openshift.newBuild("--name=${appName}-${env.BRANCH_NAME}", "--image-stream=redhat-openjdk18-openshift:1.5", "--binary")
+                        openshift.withProject("${projectOpenshiftName}") {
+                            openshift.newBuild("--name=${appName}-${env.BRANCH_NAME}", "--image-stream=redhat-openjdk18-openshift:1.5", "--binary")
+                        }
                     }
                 }
 
@@ -54,7 +58,9 @@ pipeline {
             steps {
                 script {
                     openshift.withCluster() {
-                        openshift.selector("bc", "${appName}-${env.BRANCH_NAME}").startBuild("--from-file=target/todo-list-jenkins-0.0.1-SNAPSHOT.jar", "--wait")
+                        openshift.withProject("${projectOpenshiftName}") {
+                            openshift.selector("bc", "${appName}-${env.BRANCH_NAME}").startBuild("--from-file=target/todo-list-jenkins-0.0.1-SNAPSHOT.jar", "--wait")
+                        }
                     }
                 }
 
@@ -82,7 +88,9 @@ pipeline {
             when {
                 expression {
                     openshift.withCluster() {
-                        return !openshift.selector("dc", "${appName}-${env.BRANCH_NAME}").exists()
+                        openshift.withProject("${projectOpenshiftName}") {
+                            return !openshift.selector("dc", "${appName}-${env.BRANCH_NAME}").exists()
+                        }
                     }
                 }
 
@@ -90,20 +98,12 @@ pipeline {
             steps {
                 script {
                     openshift.withCluster() {
-                        openshift.newApp("${appName}:${env.BRANCH_NAME}", "--name=${appName}-${env.BRANCH_NAME}").narrow('svc').expose()
+                        openshift.withProject("${projectOpenshiftName}") {
+                            openshift.newApp("${appName}:${env.BRANCH_NAME}", "--name=${appName}-${env.BRANCH_NAME}").narrow('svc').expose()
+                        }
                     }
                 }
 
-            }
-        }
-
-        stage('Send message to Channel') {
-            steps {
-                office365ConnectorSend webhookUrl: "${office365WebhookUrl}",
-                    message: "A Aplicação foi implantada em ambiente de ${env.BRANCH_NAME}"+
-                             "<br>Duração total do pipeline: ${currentBuild.durationString}",
-                    status: "Sucesso",
-                    color: "#99C712"
             }
         }
     }
