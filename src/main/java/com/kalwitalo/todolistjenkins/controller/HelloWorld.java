@@ -18,4 +18,9 @@ public class HelloWorld {
     public String helloWorldWithMessage(@PathVariable String message) {
         return "Hello World " + message;
     }
+
+    @GetMapping("{message}/version")
+    public String helloWorldWithMessageVersion(@PathVariable String message) {
+        return "Hello World " + message + "\n minha versão atual é 1.0";
+    }
 }
